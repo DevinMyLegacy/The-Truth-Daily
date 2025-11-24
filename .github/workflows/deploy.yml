@@ -1,0 +1,43 @@
+name: Deploy Flutter web to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    env:
+      REPO_NAME: ${{ github.event.repository.name }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Create .env from secret
+        # only create .env when the secret is present; secrets are masked
+        if: ${{ secrets.API_BIBLE_KEY != '' }}
+        run: |
+          printf 'API_BIBLE_KEY=%s\n' "${{ secrets.API_BIBLE_KEY }}" > .env
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Build Flutter web
+        run: flutter build web --release --base-href /${{ env.REPO_NAME }}/
+
+      - name: Add .nojekyll
+        run: touch build/web/.nojekyll
+
+      - name: Deploy to GitHub Pages (gh-pages branch)
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          publish_dir: build/web
+          publish_branch: gh-pages
+          github_token: ${{ secrets.GITHUB_TOKEN }}
