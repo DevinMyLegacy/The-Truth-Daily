@@ -1,0 +1,22 @@
+# Start from a base image that includes the Flutter SDK
+# Official images are maintained by the community or Google/Dart team
+FROM cirrusci/flutter:stable
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Copy the pubspec.yaml and pubspec.lock to leverage Docker caching
+COPY pubspec.yaml .
+COPY pubspec.lock .
+
+# Get the dependencies. This speeds up subsequent builds if only code changes.
+RUN flutter pub get
+
+# Copy the rest of the application source code
+COPY . .
+
+# Set Flutter's path in the container environment
+ENV PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/lib/flutter/bin"
+
+# Default command if the container is run interactively (e.g., to run tests or analyze)
+CMD ["flutter", "analyze"]

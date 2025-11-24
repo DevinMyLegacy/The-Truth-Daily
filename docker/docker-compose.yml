@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+  app:
+    build: .
+    volumes:
+      # Mount the current project directory inside the container
+      - .:/app
+    environment:
+      # You can pass the API key here for command-line access (e.g., for tests)
+      - API_BIBLE_KEY=${API_BIBLE_KEY}
+    # User is often required for permission issues on Linux/macOS
+    user: "root"
